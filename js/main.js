@@ -45,6 +45,8 @@ async function boot() {
   } catch (err) {
     const msg = err.name === 'NotAllowedError'
       ? 'Camera permission denied — allow camera access and reload'
+      : err.name === 'NotReadableError'
+      ? 'Camera is in use by another app (Teams, Zoom…) — close it and reload'
       : `Camera error: ${err.message}`;
     showError(msg);
     console.error(err);
@@ -77,10 +79,21 @@ function showError(msg) {
 }
 
 async function startCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 640, height: 480, facingMode: 'user' },
-    audio: false,
-  });
+  let stream;
+  try {
+    // Try preferred constraints first
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: 'user' },
+      audio: false,
+    });
+  } catch (e) {
+    if (e.name === 'NotReadableError' || e.name === 'OverconstrainedError') {
+      // Camera busy or constraints unsupported — retry with no constraints
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    } else {
+      throw e;
+    }
+  }
   videoEl.srcObject = stream;
   await new Promise(res => videoEl.onloadedmetadata = res);
   overlayEl.width  = videoEl.videoWidth;
