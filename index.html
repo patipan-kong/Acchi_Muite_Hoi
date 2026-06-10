@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIロボと対決！あっちむいてホイ</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>AIロボと対決！<br>あっちむいてホイ</h1>
+    </header>
+
+    <main>
+      <!-- Webcam + canvas overlay -->
+      <div id="camera-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div id="direction-indicator"></div>
+      </div>
+
+      <!-- Game panels -->
+      <div id="game-panel">
+
+        <!-- IDLE -->
+        <div id="screen-idle" class="screen active">
+          <p class="instruction">カメラに向かってじゃんけんをしよう！</p>
+          <button id="btn-start">スタート</button>
+        </div>
+
+        <!-- JANKEN_COUNTDOWN -->
+        <div id="screen-countdown" class="screen">
+          <div id="countdown-display" class="big-text">3</div>
+          <p class="instruction">じゃんけんの手を準備してください</p>
+        </div>
+
+        <!-- JANKEN_DETECTION -->
+        <div id="screen-detection" class="screen">
+          <div id="detection-display" class="big-text">ポン！</div>
+          <p class="instruction">手を見せて！</p>
+          <div id="detected-gesture" class="gesture-display">?</div>
+        </div>
+
+        <!-- JANKEN_RESULT -->
+        <div id="screen-result" class="screen">
+          <div id="result-row">
+            <div class="choice-box">
+              <div class="label">あなた</div>
+              <div id="player-choice" class="gesture-display">?</div>
+            </div>
+            <div class="vs-label">VS</div>
+            <div class="choice-box">
+              <div class="label">AIロボ</div>
+              <div id="cpu-choice" class="gesture-display">?</div>
+            </div>
+          </div>
+          <div id="janken-result-text" class="result-text"></div>
+        </div>
+
+        <!-- ACCHI_MUITE_HOI -->
+        <div id="screen-acchi" class="screen">
+          <div id="acchi-instruction" class="big-text">あっち向いて</div>
+          <div id="acchi-subtext" class="instruction"></div>
+          <div id="acchi-arrows" class="arrows-display">
+            <span id="cpu-arrow"></span>
+          </div>
+          <div id="acchi-status" class="instruction"></div>
+        </div>
+
+        <!-- GAME_OVER -->
+        <div id="screen-gameover" class="screen">
+          <div id="gameover-text" class="big-text"></div>
+          <button id="btn-retry">もう一回</button>
+        </div>
+
+      </div>
+    </main>
+
+    <div id="score-board">
+      <span>あなた: <span id="score-player">0</span></span>
+      <span>AIロボ: <span id="score-cpu">0</span></span>
+      <span>ラウンド: <span id="round-count">1</span></span>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
