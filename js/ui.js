@@ -43,10 +43,19 @@ export function showJankenResult(playerGesture, cpuGesture, winner) {
   }
 }
 
-// Set the headline + subtitle; hides the directions row and result
+// Set the headline + subtitle; hides the directions row and result.
+// Resets arrows to '?' so stale values never flash when the panel re-opens.
 export function setAcchiAnnounce(title, subtitle) {
   document.getElementById('acchi-instruction').textContent = title;
   document.getElementById('acchi-subtext').textContent = subtitle;
+
+  const playerArrow = document.getElementById('acchi-player-arrow');
+  const robotArrow  = document.getElementById('acchi-robot-arrow');
+  playerArrow.textContent = '?';
+  robotArrow.textContent  = '?';
+  playerArrow.classList.remove('pop-in');
+  robotArrow.classList.remove('pop-in');
+
   document.getElementById('acchi-directions').hidden = true;
   const r = document.getElementById('acchi-result');
   r.hidden = true;
