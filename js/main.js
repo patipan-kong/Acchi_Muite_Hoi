@@ -34,8 +34,25 @@ let overlayCtx = null;
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
+  // Camera requires HTTPS or localhost — file:// won't work
+  if (!window.isSecureContext) {
+    showError('Serve over HTTP (not file://) — open a terminal and run: npx serve .');
+    return;
+  }
+
   try {
     await startCamera();
+  } catch (err) {
+    const msg = err.name === 'NotAllowedError'
+      ? 'Camera permission denied — allow camera access and reload'
+      : `Camera error: ${err.message}`;
+    showError(msg);
+    console.error(err);
+    return;
+  }
+
+  try {
+    btnStart.textContent = 'Loading AI models...';
     await Promise.all([
       initGestureRecognizer(),
       initHandLandmarker(),
@@ -44,9 +61,19 @@ async function boot() {
     btnStart.disabled = false;
     btnStart.textContent = 'Start';
   } catch (err) {
-    btnStart.textContent = 'Camera Error';
+    showError(`Model load error: ${err.message}`);
     console.error(err);
   }
+}
+
+function showError(msg) {
+  btnStart.textContent = '⚠ Error';
+  btnStart.disabled = true;
+  const p = document.createElement('p');
+  p.style.cssText = 'color:#f85149;font-size:.9rem;margin-top:8px;max-width:280px;text-align:center';
+  p.textContent = msg;
+  btnStart.insertAdjacentElement('afterend', p);
+  console.error(msg);
 }
 
 async function startCamera() {
