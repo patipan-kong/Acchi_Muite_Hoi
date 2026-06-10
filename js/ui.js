@@ -32,13 +32,13 @@ export function showJankenResult(playerGesture, cpuGesture, winner) {
 
   const el = document.getElementById('janken-result-text');
   if (winner === 'player') {
-    el.textContent = 'あなたの勝ち！';
+    el.textContent = 'You win!';
     el.className = 'result-text win';
   } else if (winner === 'cpu') {
-    el.textContent = 'AIロボの勝ち！';
+    el.textContent = 'AI Robot wins!';
     el.className = 'result-text lose';
   } else {
-    el.textContent = 'あいこ！';
+    el.textContent = 'Draw!';
     el.className = 'result-text draw';
   }
 }
@@ -50,15 +50,15 @@ export function setAcchiInstruction(pointer, cpuDirection) {
   const statusEl    = document.getElementById('acchi-status');
 
   if (pointer === 'cpu') {
-    instruction.textContent = 'あっち向いて ホイ！';
-    subtext.textContent = 'AIロボが指差す方向と違う方向を向こう！';
+    instruction.textContent = 'Look Away!';
+    subtext.textContent = 'Turn your face to a DIFFERENT direction than AI Robot points!';
     arrowEl.textContent = cpuDirection ? DIRECTION_ARROW[cpuDirection] : '';
-    statusEl.textContent = '顔を動かして！';
+    statusEl.textContent = 'Move your face!';
   } else {
-    instruction.textContent = 'あっち向いて ホイ！';
-    subtext.textContent = '指でAIロボと同じ方向を指さそう！';
+    instruction.textContent = 'Point the Way!';
+    subtext.textContent = 'Point your finger in the SAME direction AI Robot turns!';
     arrowEl.textContent = '';
-    statusEl.textContent = '指の方向を見せて！';
+    statusEl.textContent = 'Show your pointing direction!';
   }
 }
 
@@ -69,10 +69,10 @@ export function setAcchiStatus(text) {
 export function showGameOver(winner) {
   const el = document.getElementById('gameover-text');
   if (winner === 'player') {
-    el.textContent = '🎉 あなたの勝ち！';
+    el.textContent = '🎉 You Win!';
     el.style.color = '#3fb950';
   } else {
-    el.textContent = '💥 AIロボの勝ち！';
+    el.textContent = '💥 AI Robot Wins!';
     el.style.color = '#f85149';
   }
 }

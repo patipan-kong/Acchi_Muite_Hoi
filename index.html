@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIロボと対決！あっちむいてホイ</title>
+  <title>vs AI Robot! Look Away!</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div id="app">
     <header>
-      <h1>AIロボと対決！<br>あっちむいてホイ</h1>
+      <h1>vs AI Robot!<br>Rock-Paper-Scissors &amp; Look Away!</h1>
     </header>
 
     <main>
@@ -25,20 +25,20 @@
 
         <!-- IDLE -->
         <div id="screen-idle" class="screen active">
-          <p class="instruction">カメラに向かってじゃんけんをしよう！</p>
-          <button id="btn-start">スタート</button>
+          <p class="instruction">Show Rock, Paper, or Scissors to the camera!</p>
+          <button id="btn-start">Start</button>
         </div>
 
         <!-- JANKEN_COUNTDOWN -->
         <div id="screen-countdown" class="screen">
           <div id="countdown-display" class="big-text">3</div>
-          <p class="instruction">じゃんけんの手を準備してください</p>
+          <p class="instruction">Get your hand ready...</p>
         </div>
 
         <!-- JANKEN_DETECTION -->
         <div id="screen-detection" class="screen">
-          <div id="detection-display" class="big-text">ポン！</div>
-          <p class="instruction">手を見せて！</p>
+          <div id="detection-display" class="big-text">Go!</div>
+          <p class="instruction">Show your hand!</p>
           <div id="detected-gesture" class="gesture-display">?</div>
         </div>
 
@@ -46,12 +46,12 @@
         <div id="screen-result" class="screen">
           <div id="result-row">
             <div class="choice-box">
-              <div class="label">あなた</div>
+              <div class="label">You</div>
               <div id="player-choice" class="gesture-display">?</div>
             </div>
             <div class="vs-label">VS</div>
             <div class="choice-box">
-              <div class="label">AIロボ</div>
+              <div class="label">AI Robot</div>
               <div id="cpu-choice" class="gesture-display">?</div>
             </div>
           </div>
@@ -60,7 +60,7 @@
 
         <!-- ACCHI_MUITE_HOI -->
         <div id="screen-acchi" class="screen">
-          <div id="acchi-instruction" class="big-text">あっち向いて</div>
+          <div id="acchi-instruction" class="big-text">Look Away!</div>
           <div id="acchi-subtext" class="instruction"></div>
           <div id="acchi-arrows" class="arrows-display">
             <span id="cpu-arrow"></span>
@@ -71,16 +71,16 @@
         <!-- GAME_OVER -->
         <div id="screen-gameover" class="screen">
           <div id="gameover-text" class="big-text"></div>
-          <button id="btn-retry">もう一回</button>
+          <button id="btn-retry">Play Again</button>
         </div>
 
       </div>
     </main>
 
     <div id="score-board">
-      <span>あなた: <span id="score-player">0</span></span>
-      <span>AIロボ: <span id="score-cpu">0</span></span>
-      <span>ラウンド: <span id="round-count">1</span></span>
+      <span>You: <span id="score-player">0</span></span>
+      <span>AI Robot: <span id="score-cpu">0</span></span>
+      <span>Round: <span id="round-count">1</span></span>
     </div>
   </div>
 

@@ -42,9 +42,9 @@ async function boot() {
       initFaceLandmarker(),
     ]);
     btnStart.disabled = false;
-    btnStart.textContent = 'スタート';
+    btnStart.textContent = 'Start';
   } catch (err) {
-    btnStart.textContent = 'カメラエラー';
+    btnStart.textContent = 'Camera Error';
     console.error(err);
   }
 }
@@ -93,14 +93,14 @@ function transitionTo(newState) {
   }
 }
 
-// ── Janken countdown: 3 → 2 → 1 → ポン ──────────────────────────────────────
+// ── Janken countdown: 3 → 2 → 1 → Go ────────────────────────────────────────
 async function runCountdown() {
   for (const n of [3, 2, 1]) {
     setCountdown(n);
     playCountdownBeep();
     await wait(900);
   }
-  setCountdown('ポン！');
+  setCountdown('Go!');
   playGoBeep();
   await wait(300);
   transitionTo(State.JANKEN_DETECTION);
@@ -135,7 +135,7 @@ async function runDetection() {
 
   if (!playerGesture) {
     // No gesture detected — redo
-    setCountdown('もう一度！');
+    setCountdown('Try again!');
     await wait(1000);
     transitionTo(State.JANKEN_COUNTDOWN);
     return;
@@ -174,13 +174,13 @@ async function runAcchi() {
     // CPU points → player must turn face to a DIFFERENT direction
     game.cpuDirection = randomDirection();
     setAcchiInstruction('cpu', game.cpuDirection);
-    setAcchiStatus('顔を ' + DIRECTION_ARROW[game.cpuDirection] + ' 以外の方向に向けて！');
+    setAcchiStatus('Turn your face away from ' + DIRECTION_ARROW[game.cpuDirection] + '!');
     await runFaceDetectionLoop();
   } else {
     // Player points → player must point to the SAME direction as cpu turns
     game.cpuDirection = randomDirection();
     setAcchiInstruction('player', game.cpuDirection);
-    setAcchiStatus(`AIロボが ${DIRECTION_ARROW[game.cpuDirection]} を向く！指で同じ方向を指せ！`);
+    setAcchiStatus(`AI Robot faces ${DIRECTION_ARROW[game.cpuDirection]} — point the same way!`);
     await runHandDetectionLoop();
   }
 }
@@ -194,7 +194,7 @@ async function runFaceDetectionLoop() {
     await animFrame();
     if (performance.now() - start > TIMEOUT_MS) {
       // Timeout — no match, go back to janken
-      setAcchiStatus('時間切れ！もう一回！');
+      setAcchiStatus('Time up! Try again!');
       await wait(1200);
       game.round++;
       updateScore(game.scorePlayer, game.scoreCpu, game.round);
@@ -209,7 +209,7 @@ async function runFaceDetectionLoop() {
       if (face === game.cpuDirection) {
         // Match — player LOSES this round (cpu wins)
         playMatchSound();
-        setAcchiStatus('一致！AIロボの勝ち！');
+        setAcchiStatus('Match! AI Robot wins!');
         await wait(1500);
         game.scoreCpu++;
         updateScore(game.scorePlayer, game.scoreCpu, game.round);
@@ -217,7 +217,7 @@ async function runFaceDetectionLoop() {
         showScreen(State.GAME_OVER);
       } else {
         // No match — player avoids → back to janken
-        setAcchiStatus('よけた！もう一回！');
+        setAcchiStatus('Dodged! Next round!');
         playDrawSound();
         await wait(1200);
         game.round++;
@@ -237,7 +237,7 @@ async function runHandDetectionLoop() {
   while (true) {
     await animFrame();
     if (performance.now() - start > TIMEOUT_MS) {
-      setAcchiStatus('時間切れ！もう一回！');
+      setAcchiStatus('Time up! Try again!');
       await wait(1200);
       game.round++;
       updateScore(game.scorePlayer, game.scoreCpu, game.round);
@@ -252,7 +252,7 @@ async function runHandDetectionLoop() {
       if (dir === game.cpuDirection) {
         // Match — player WINS
         playWinSound();
-        setAcchiStatus('一致！あなたの勝ち！');
+        setAcchiStatus('Match! You win!');
         await wait(1500);
         game.scorePlayer++;
         updateScore(game.scorePlayer, game.scoreCpu, game.round);
@@ -260,7 +260,7 @@ async function runHandDetectionLoop() {
         showScreen(State.GAME_OVER);
       } else {
         // No match — cpu avoids → back to janken
-        setAcchiStatus('外れた！もう一回！');
+        setAcchiStatus('Missed! Next round!');
         playDrawSound();
         await wait(1200);
         game.round++;
@@ -288,5 +288,5 @@ function animFrame() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 btnStart.disabled = true;
-btnStart.textContent = '読み込み中…';
+btnStart.textContent = 'Loading...';
 boot();
