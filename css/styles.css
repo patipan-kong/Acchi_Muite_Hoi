@@ -159,11 +159,62 @@ main {
   color: #58a6ff;
 }
 
-/* Arrows */
-.arrows-display {
-  font-size: 5rem;
-  line-height: 1;
+/* Acchi direction reveal boxes */
+.directions-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
+
+.direction-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #21262d;
+  border-radius: 12px;
+  padding: 16px 24px;
+  min-width: 90px;
+}
+
+.dir-label {
+  font-size: 0.75rem;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dir-arrow {
+  font-size: 4rem;
+  line-height: 1;
+  text-align: center;
+  display: block;
+}
+
+/* Pop-in animation for arrow reveals */
+@keyframes popIn {
+  0%   { transform: scale(0.1); opacity: 0; }
+  60%  { transform: scale(1.25); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.pop-in {
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Panel background flash for win / lose */
+@keyframes flashWin {
+  0%, 100% { background: #161b22; }
+  50%      { background: rgba(63, 185, 80, 0.25); }
+}
+
+@keyframes flashLose {
+  0%, 100% { background: #161b22; }
+  50%      { background: rgba(248, 81, 73, 0.25); }
+}
+
+#game-panel.flash-win  { animation: flashWin  0.45s ease 2; }
+#game-panel.flash-lose { animation: flashLose 0.45s ease 2; }
 
 /* Buttons */
 button {

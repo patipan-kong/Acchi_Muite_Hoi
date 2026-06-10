@@ -60,12 +60,20 @@
 
         <!-- ACCHI_MUITE_HOI -->
         <div id="screen-acchi" class="screen">
-          <div id="acchi-instruction" class="big-text">Look Away!</div>
+          <div id="acchi-instruction" class="big-text"></div>
           <div id="acchi-subtext" class="instruction"></div>
-          <div id="acchi-arrows" class="arrows-display">
-            <span id="cpu-arrow"></span>
+          <div id="acchi-directions" class="directions-row" hidden>
+            <div class="direction-box">
+              <div class="dir-label" id="acchi-player-label">You</div>
+              <div id="acchi-player-arrow" class="dir-arrow">?</div>
+            </div>
+            <div class="vs-label">VS</div>
+            <div class="direction-box">
+              <div class="dir-label" id="acchi-robot-label">Robot</div>
+              <div id="acchi-robot-arrow" class="dir-arrow">?</div>
+            </div>
           </div>
-          <div id="acchi-status" class="instruction"></div>
+          <div id="acchi-result" class="result-text" hidden></div>
         </div>
 
         <!-- GAME_OVER -->

@@ -3,7 +3,7 @@ import { initHandLandmarker }    from './mediapipe/hand-direction.js';
 import { initFaceLandmarker }    from './mediapipe/face-direction.js';
 import {
   State, createGameState, resolveJanken, randomGesture, randomDirection,
-  DIRECTION_ARROW, GESTURE_EMOJI,
+  DIRECTION_ARROW,
 } from './game-state.js';
 import {
   startGestureCollection, stopGestureCollection, getMajorityGesture,
@@ -13,7 +13,8 @@ import {
 } from './acchi-muite-hoi.js';
 import {
   showScreen, setCountdown, setDetectedGesture, showJankenResult,
-  setAcchiInstruction, setAcchiStatus, showGameOver, updateScore,
+  setAcchiAnnounce, showAcchiDirections, revealRobotArrow,
+  updatePlayerArrow, setAcchiResult, showGameOver, updateScore,
   setDirectionIndicator,
 } from './ui.js';
 import {
@@ -206,114 +207,120 @@ async function runJankenResult() {
 // ── Acchi Muite Hoi ───────────────────────────────────────────────────────────
 async function runAcchi() {
   resetDirectionDetectors();
-
-  const pointer = game.jankenWinner;  // 'player' or 'cpu'
-  game.pointer  = pointer;
-
-  if (pointer === 'cpu') {
-    // CPU points → player must turn face to a DIFFERENT direction
-    game.cpuDirection = randomDirection();
-    setAcchiInstruction('cpu', game.cpuDirection);
-    setAcchiStatus('Turn your face away from ' + DIRECTION_ARROW[game.cpuDirection] + '!');
-    await runFaceDetectionLoop();
+  if (game.jankenWinner === 'player') {
+    await runPlayerPointsPhase();
   } else {
-    // Player points → player must point to the SAME direction as cpu turns
-    game.cpuDirection = randomDirection();
-    setAcchiInstruction('player', game.cpuDirection);
-    setAcchiStatus(`AI Robot faces ${DIRECTION_ARROW[game.cpuDirection]} — point the same way!`);
-    await runHandDetectionLoop();
+    await runCpuPointsPhase();
   }
 }
 
-// Player turns face: must NOT match cpuDirection → if it matches, player loses
-async function runFaceDetectionLoop() {
-  const TIMEOUT_MS = 8000;
-  const start = performance.now();
+// Player won Janken → player points, robot turns its face, compare
+async function runPlayerPointsPhase() {
+  game.pointer = 'player';
 
-  while (true) {
-    await animFrame();
-    if (performance.now() - start > TIMEOUT_MS) {
-      // Timeout — no match, go back to janken
-      setAcchiStatus('Time up! Try again!');
-      await wait(1200);
-      game.round++;
-      updateScore(game.scorePlayer, game.scoreCpu, game.round);
-      transitionTo(State.JANKEN_COUNTDOWN);
-      return;
-    }
+  // Announce
+  setAcchiAnnounce('YOU WON! 🎉', 'Point your finger in any direction!');
+  await wait(1200);
+  setAcchiAnnounce('Point your finger!', 'Hold it steady — it will lock in automatically...');
 
-    const face = getPlayerFaceDirection(videoEl);
-    setDirectionIndicator(face ? DIRECTION_ARROW[face] : '');
+  // Detect player pointing direction
+  const playerDir = await waitForStableDirection('hand');
+  if (!playerDir) { await handleAcchiTimeout(); return; }
 
-    if (face) {
-      if (face === game.cpuDirection) {
-        // Match — player LOSES this round (cpu wins)
-        playMatchSound();
-        setAcchiStatus('Match! AI Robot wins!');
-        await wait(1500);
-        game.scoreCpu++;
-        updateScore(game.scorePlayer, game.scoreCpu, game.round);
-        showGameOver('cpu');
-        showScreen(State.GAME_OVER);
-      } else {
-        // No match — player avoids → back to janken
-        setAcchiStatus('Dodged! Next round!');
-        playDrawSound();
-        await wait(1200);
-        game.round++;
-        updateScore(game.scorePlayer, game.scoreCpu, game.round);
-        transitionTo(State.JANKEN_COUNTDOWN);
-      }
-      return;
-    }
+  // Confirmed — show player's locked direction, then reveal robot
+  setDirectionIndicator(DIRECTION_ARROW[playerDir]);
+  setAcchiAnnounce('Locked! ' + DIRECTION_ARROW[playerDir], 'What will the Robot do...?');
+  showAcchiDirections(DIRECTION_ARROW[playerDir], '🤔', 'Your point', 'Robot turns');
+  await wait(1000);
+
+  // Reveal robot face direction with pop-in animation
+  game.cpuDirection = randomDirection();
+  revealRobotArrow(game.cpuDirection);
+  await wait(900);
+
+  // Compare
+  if (playerDir === game.cpuDirection) {
+    setAcchiResult('MATCH! YOU WIN! 🎉', 'win');
+    playWinSound();
+    await wait(2200);
+    game.scorePlayer++;
+    updateScore(game.scorePlayer, game.scoreCpu, game.round);
+    showGameOver('player');
+    showScreen(State.GAME_OVER);
+  } else {
+    setAcchiResult('No Match! Back to Janken!', 'draw');
+    playDrawSound();
+    await wait(1600);
+    game.round++;
+    updateScore(game.scorePlayer, game.scoreCpu, game.round);
+    transitionTo(State.JANKEN_COUNTDOWN);
   }
 }
 
-// Player points finger: must match cpuDirection → if it matches, player wins
-async function runHandDetectionLoop() {
-  const TIMEOUT_MS = 8000;
-  const start = performance.now();
+// CPU won Janken → robot points visibly, player must look away, compare
+async function runCpuPointsPhase() {
+  game.pointer      = 'cpu';
+  game.cpuDirection = randomDirection();
 
+  // Show what the robot is pointing at — no hidden information
+  setAcchiAnnounce('ROBOT WON!', `Robot points: ${DIRECTION_ARROW[game.cpuDirection]}`);
+  await wait(1400);
+
+  setAcchiAnnounce('Look the other way!', `Do NOT turn toward ${DIRECTION_ARROW[game.cpuDirection]}`);
+  showAcchiDirections('?', DIRECTION_ARROW[game.cpuDirection], 'You look', 'Robot points');
+  await wait(600);
+
+  // Detect player face direction
+  const playerDir = await waitForStableDirection('face');
+  if (!playerDir) { await handleAcchiTimeout(); return; }
+
+  // Reveal player face direction with pop-in animation
+  updatePlayerArrow(playerDir);
+  await wait(600);
+
+  // Compare
+  if (playerDir === game.cpuDirection) {
+    setAcchiResult('MATCH! YOU LOSE! 💥', 'lose');
+    playMatchSound();
+    await wait(2200);
+    game.scoreCpu++;
+    updateScore(game.scorePlayer, game.scoreCpu, game.round);
+    showGameOver('cpu');
+    showScreen(State.GAME_OVER);
+  } else {
+    setAcchiResult('Safe! Back to Janken! 😅', 'win');
+    playDrawSound();
+    await wait(1600);
+    game.round++;
+    updateScore(game.scorePlayer, game.scoreCpu, game.round);
+    transitionTo(State.JANKEN_COUNTDOWN);
+  }
+}
+
+// Poll until a stable direction is detected or timeout
+async function waitForStableDirection(type, timeoutMs = 10000) {
+  const start = performance.now();
   while (true) {
     await animFrame();
-    if (performance.now() - start > TIMEOUT_MS) {
-      setAcchiStatus('Time up! Try again!');
-      await wait(1200);
-      game.round++;
-      updateScore(game.scorePlayer, game.scoreCpu, game.round);
-      transitionTo(State.JANKEN_COUNTDOWN);
-      return;
-    }
-
-    const dir = getPlayerPointDirection(videoEl);
+    if (performance.now() - start > timeoutMs) return null;
+    const dir = type === 'hand'
+      ? getPlayerPointDirection(videoEl)
+      : getPlayerFaceDirection(videoEl);
     setDirectionIndicator(dir ? DIRECTION_ARROW[dir] : '');
-
-    if (dir) {
-      if (dir === game.cpuDirection) {
-        // Match — player WINS
-        playWinSound();
-        setAcchiStatus('Match! You win!');
-        await wait(1500);
-        game.scorePlayer++;
-        updateScore(game.scorePlayer, game.scoreCpu, game.round);
-        showGameOver('player');
-        showScreen(State.GAME_OVER);
-      } else {
-        // No match — cpu avoids → back to janken
-        setAcchiStatus('Missed! Next round!');
-        playDrawSound();
-        await wait(1200);
-        game.round++;
-        updateScore(game.scorePlayer, game.scoreCpu, game.round);
-        transitionTo(State.JANKEN_COUNTDOWN);
-      }
-      return;
-    }
+    if (dir) return dir;
   }
+}
+
+async function handleAcchiTimeout() {
+  setAcchiAnnounce('Time up!', 'Next round...');
+  await wait(1200);
+  game.round++;
+  updateScore(game.scorePlayer, game.scoreCpu, game.round);
+  transitionTo(State.JANKEN_COUNTDOWN);
 }
 
 function runGameOver() {
-  // Score and screen already set inside runFaceDetectionLoop/runHandDetectionLoop
+  // Screen and score already set inside each phase function
   btnStart.disabled = false;
 }
 

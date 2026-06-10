@@ -43,27 +43,54 @@ export function showJankenResult(playerGesture, cpuGesture, winner) {
   }
 }
 
-export function setAcchiInstruction(pointer, cpuDirection) {
-  const instruction = document.getElementById('acchi-instruction');
-  const subtext     = document.getElementById('acchi-subtext');
-  const arrowEl     = document.getElementById('cpu-arrow');
-  const statusEl    = document.getElementById('acchi-status');
-
-  if (pointer === 'cpu') {
-    instruction.textContent = 'Look Away!';
-    subtext.textContent = 'Turn your face to a DIFFERENT direction than AI Robot points!';
-    arrowEl.textContent = cpuDirection ? DIRECTION_ARROW[cpuDirection] : '';
-    statusEl.textContent = 'Move your face!';
-  } else {
-    instruction.textContent = 'Point the Way!';
-    subtext.textContent = 'Point your finger in the SAME direction AI Robot turns!';
-    arrowEl.textContent = '';
-    statusEl.textContent = 'Show your pointing direction!';
-  }
+// Set the headline + subtitle; hides the directions row and result
+export function setAcchiAnnounce(title, subtitle) {
+  document.getElementById('acchi-instruction').textContent = title;
+  document.getElementById('acchi-subtext').textContent = subtitle;
+  document.getElementById('acchi-directions').hidden = true;
+  const r = document.getElementById('acchi-result');
+  r.hidden = true;
+  r.className = 'result-text';
 }
 
-export function setAcchiStatus(text) {
-  document.getElementById('acchi-status').textContent = text;
+// Show the side-by-side VS row with given arrow text (emoji or '?')
+export function showAcchiDirections(playerArrow, robotArrow, playerLabel, robotLabel) {
+  document.getElementById('acchi-player-label').textContent = playerLabel;
+  document.getElementById('acchi-robot-label').textContent  = robotLabel;
+  document.getElementById('acchi-player-arrow').textContent = playerArrow;
+  document.getElementById('acchi-robot-arrow').textContent  = robotArrow;
+  document.getElementById('acchi-directions').hidden = false;
+}
+
+// Animate the robot arrow from '?' → real direction
+export function revealRobotArrow(dir) {
+  const el = document.getElementById('acchi-robot-arrow');
+  el.textContent = DIRECTION_ARROW[dir];
+  el.classList.remove('pop-in');
+  void el.offsetWidth;
+  el.classList.add('pop-in');
+}
+
+// Animate the player arrow from '?' → locked direction
+export function updatePlayerArrow(dir) {
+  const el = document.getElementById('acchi-player-arrow');
+  el.textContent = DIRECTION_ARROW[dir];
+  el.classList.remove('pop-in');
+  void el.offsetWidth;
+  el.classList.add('pop-in');
+}
+
+// Show the match/no-match result text and flash the panel background
+export function setAcchiResult(text, type) {
+  const el = document.getElementById('acchi-result');
+  el.textContent = text;
+  el.className = 'result-text ' + type;
+  el.hidden = false;
+  const panel = document.getElementById('game-panel');
+  panel.classList.remove('flash-win', 'flash-lose');
+  void panel.offsetWidth;
+  if (type === 'win')  panel.classList.add('flash-win');
+  if (type === 'lose') panel.classList.add('flash-lose');
 }
 
 export function showGameOver(winner) {
